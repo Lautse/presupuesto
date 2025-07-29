@@ -3,44 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presupuesto Mensual</title>
+    <title>Presupuesto Mensual 🐱</title>
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #f6f4f2; color: #333; margin: 0; }
-        header { background: #eac4d5; padding: 20px; text-align: center; }
-        h1 { margin: 0; }
-        .container { max-width: 800px; margin: 30px auto; padding: 20px; background: white; border-radius: 12px;
-                     box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: #f4f2f3; 
+            color: #333; 
+            margin: 0;
+        }
+        header { 
+            background: #f7d9a6; 
+            padding: 20px; 
+            text-align: center; 
+            border-bottom: 3px solid #eac4d5; 
+        }
+        h1 { margin: 0; font-size: 2rem; color: #4d3b3b; }
+        h1 span { font-size: 1.4rem; }
+        .container { 
+            max-width: 800px; 
+            margin: 30px auto; 
+            padding: 30px; 
+            background: white; 
+            border-radius: 20px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
         .form-group { margin: 20px 0; }
-        .result { margin-top: 30px; padding: 20px; background: #f7d9a6; border-radius: 12px; }
-        button { background: #a3c9a8; border: none; padding: 10px 20px; font-size: 16px; border-radius: 8px; cursor: pointer; }
-        button:hover { background: #92b896; }
-        input[type="number"] { padding: 10px; font-size: 16px; width: 100%; }
         label { font-weight: bold; }
+        input, select { 
+            padding: 12px; 
+            font-size: 16px; 
+            width: 100%; 
+            border: 1px solid #ccc; 
+            border-radius: 10px; 
+            margin-top: 5px;
+        }
+        button { 
+            background: #a3c9a8; 
+            border: none; 
+            padding: 12px 25px; 
+            font-size: 16px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        button:hover { background: #8fb893; transform: scale(1.05); }
+        .result { 
+            margin-top: 30px; 
+            padding: 20px; 
+            background: #eac4d5; 
+            border-radius: 20px; 
+            text-align: center;
+        }
+        .result img { 
+            width: 120px; 
+            margin-bottom: 15px; 
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        canvas { margin-top: 20px; }
     </style>
 </head>
 <body>
     <header>
-        <h1>Presupuesto Mensual</h1>
-        <p>Calcula tu ahorro y balance</p>
+        <h1>Presupuesto Mensual <span>🐱</span></h1>
+        <p>Tu asistente financiero con un toque de ternura</p>
     </header>
     <div class="container">
         <div class="form-group">
             <label for="ingreso">¿Cuál fue tu ingreso este mes?</label>
-            <input type="number" id="ingreso" placeholder="Ejemplo: 2000">
+            <input type="number" id="ingreso" placeholder="Ejemplo: 1500000">
         </div>
         <div class="form-group">
-            <label>¿Qué pagos realizaste?</label><br>
-            <input type="checkbox" id="renta"> Renta ($800)<br>
-            <input type="checkbox" id="servicios"> Servicios ($120)<br>
-            <input type="checkbox" id="internet"> Internet ($50)<br>
-            <input type="checkbox" id="transporte"> Transporte ($60)<br>
-            <input type="checkbox" id="comida"> Comida ($250)<br>
+            <label>¿Cuánto viajas este mes?</label>
+            <select id="movilidad">
+                <option value="full">Viajo todos los días</option>
+                <option value="half">Viajo la mitad del mes</option>
+                <option value="none">No viajo</option>
+            </select>
         </div>
         <button onclick="calcular()">Calcular</button>
-        <div class="result" id="resultado" style="display:none;"></div>
+        <div class="result" id="resultado" style="display:none;">
+            <img src="https://i.imgur.com/6X4F5pM.png" alt="Gatito motivador">
+            <div id="textoResultado"></div>
+        </div>
+        <canvas id="graficoGastos" width="400" height="400" style="display:none;"></canvas>
     </div>
 
+    <!-- Librería de Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        let chart = null;
+
         function calcular() {
             let ingreso = parseFloat(document.getElementById('ingreso').value);
             if (isNaN(ingreso) || ingreso <= 0) {
@@ -48,25 +102,58 @@
                 return;
             }
 
-            // Costos fijos seleccionados
-            let gastos = 0;
-            if(document.getElementById('renta').checked) gastos += 800;
-            if(document.getElementById('servicios').checked) gastos += 120;
-            if(document.getElementById('internet').checked) gastos += 50;
-            if(document.getElementById('transporte').checked) gastos += 60;
-            if(document.getElementById('comida').checked) gastos += 250;
+            // Transporte según movilidad
+            let movilidad = document.getElementById('movilidad').value;
+            let transporteComida = movilidad === "full" ? 800000 : movilidad === "half" ? 450000 : 200000;
 
-            // Porcentaje de ahorro (10% de ingreso)
-            let ahorro = ingreso * 0.10;
-            let balance = ingreso - gastos - ahorro;
+            // Otros gastos fijos
+            let belleza = 150000;
+            let fitness = 150000;
+            let internet = 40000;
+            let entretenimiento = 140000;
 
+            let gastosFijos = belleza + fitness + internet + entretenimiento + transporteComida;
+
+            // Ahorro flexible
+            let porcentajeAhorro = ingreso < 1300000 ? 0.08 : 0.12;
+            let ahorroTotal = ingreso * porcentajeAhorro;
+            let inversion = ingreso * (porcentajeAhorro >= 0.12 ? 0.07 : 0.05);
+            let ahorro = ahorroTotal - inversion;
+
+            let balance = ingreso - gastosFijos - ahorroTotal;
+
+            // Mostrar resultados con gatito
             document.getElementById('resultado').style.display = 'block';
-            document.getElementById('resultado').innerHTML = `
+            document.getElementById('textoResultado').innerHTML = `
                 <h2>Resultados</h2>
-                <p><strong>Ahorro (10%)</strong>: $${ahorro.toFixed(2)}</p>
-                <p><strong>Total gastos pagados</strong>: $${gastos.toFixed(2)}</p>
-                <p><strong>Balance final</strong>: $${balance.toFixed(2)}</p>
+                <p><strong>Gastos fijos</strong>: $${gastosFijos.toLocaleString()}</p>
+                <p><strong>Ahorro</strong>: $${ahorro.toLocaleString()}</p>
+                <p><strong>Inversión</strong>: $${inversion.toLocaleString()}</p>
+                <p><strong>Balance final</strong>: $${balance.toLocaleString()}</p>
+                <p><em>Porcentaje de ahorro aplicado: ${(porcentajeAhorro*100).toFixed(0)}%</em></p>
             `;
+
+            // Crear gráfico de pastel
+            let ctx = document.getElementById('graficoGastos').getContext('2d');
+            document.getElementById('graficoGastos').style.display = 'block';
+
+            let data = {
+                labels: ['Gastos fijos', 'Ahorro', 'Inversión', 'Balance final'],
+                datasets: [{
+                    data: [gastosFijos, ahorro, inversion, balance > 0 ? balance : 0],
+                    backgroundColor: ['#EAC4D5', '#A3C9A8', '#F7D9A6', '#C2E7DA'],
+                }]
+            };
+
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'pie',
+                data: data,
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
         }
     </script>
 </body>
