@@ -5,70 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presupuesto Mensual</title>
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: #f6f4f2;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background: #eac4d5;
-            padding: 20px;
-            text-align: center;
-            color: #333;
-        }
-        .cards {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px;
-            flex-wrap: wrap;
-        }
-        .card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin: 10px;
-            width: 200px;
-            text-align: center;
-        }
-        h1, h2 {
-            margin: 0;
-        }
-        img {
-            display: block;
-            margin: 0 auto;
-            width: 300px;
-        }
+        body { font-family: 'Poppins', sans-serif; background: #f6f4f2; color: #333; margin: 0; }
+        header { background: #eac4d5; padding: 20px; text-align: center; }
+        h1 { margin: 0; }
+        .container { max-width: 800px; margin: 30px auto; padding: 20px; background: white; border-radius: 12px;
+                     box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .form-group { margin: 20px 0; }
+        .result { margin-top: 30px; padding: 20px; background: #f7d9a6; border-radius: 12px; }
+        button { background: #a3c9a8; border: none; padding: 10px 20px; font-size: 16px; border-radius: 8px; cursor: pointer; }
+        button:hover { background: #92b896; }
+        input[type="number"] { padding: 10px; font-size: 16px; width: 100%; }
+        label { font-weight: bold; }
     </style>
 </head>
 <body>
     <header>
         <h1>Presupuesto Mensual</h1>
-        <p>Febrero 2025</p>
+        <p>Calcula tu ahorro y balance</p>
     </header>
-
-    <div class="cards">
-        <div class="card">
-            <h2>Ingresos</h2>
-            <p>$2,000</p>
+    <div class="container">
+        <div class="form-group">
+            <label for="ingreso">¿Cuál fue tu ingreso este mes?</label>
+            <input type="number" id="ingreso" placeholder="Ejemplo: 2000">
         </div>
-        <div class="card">
-            <h2>Ahorro</h2>
-            <p>$200 (10%)</p>
+        <div class="form-group">
+            <label>¿Qué pagos realizaste?</label><br>
+            <input type="checkbox" id="renta"> Renta ($800)<br>
+            <input type="checkbox" id="servicios"> Servicios ($120)<br>
+            <input type="checkbox" id="internet"> Internet ($50)<br>
+            <input type="checkbox" id="transporte"> Transporte ($60)<br>
+            <input type="checkbox" id="comida"> Comida ($250)<br>
         </div>
-        <div class="card">
-            <h2>Gastos</h2>
-            <p>$1,280</p>
-        </div>
-        <div class="card">
-            <h2>Balance</h2>
-            <p>$520</p>
-        </div>
+        <button onclick="calcular()">Calcular</button>
+        <div class="result" id="resultado" style="display:none;"></div>
     </div>
 
-    <h2 style="text-align:center;">Distribución de gastos</h2>
-    <img src="grafico_gastos.png" alt="Gráfico de gastos">
+    <script>
+        function calcular() {
+            let ingreso = parseFloat(document.getElementById('ingreso').value);
+            if (isNaN(ingreso) || ingreso <= 0) {
+                alert("Por favor ingresa un ingreso válido.");
+                return;
+            }
+
+            // Costos fijos seleccionados
+            let gastos = 0;
+            if(document.getElementById('renta').checked) gastos += 800;
+            if(document.getElementById('servicios').checked) gastos += 120;
+            if(document.getElementById('internet').checked) gastos += 50;
+            if(document.getElementById('transporte').checked) gastos += 60;
+            if(document.getElementById('comida').checked) gastos += 250;
+
+            // Porcentaje de ahorro (10% de ingreso)
+            let ahorro = ingreso * 0.10;
+            let balance = ingreso - gastos - ahorro;
+
+            document.getElementById('resultado').style.display = 'block';
+            document.getElementById('resultado').innerHTML = `
+                <h2>Resultados</h2>
+                <p><strong>Ahorro (10%)</strong>: $${ahorro.toFixed(2)}</p>
+                <p><strong>Total gastos pagados</strong>: $${gastos.toFixed(2)}</p>
+                <p><strong>Balance final</strong>: $${balance.toFixed(2)}</p>
+            `;
+        }
+    </script>
 </body>
 </html>
