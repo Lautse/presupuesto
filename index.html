@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presupuesto Mensual</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f6f4f2;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #eac4d5;
+            padding: 20px;
+            text-align: center;
+            color: #333;
+        }
+        .cards {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px;
+            flex-wrap: wrap;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin: 10px;
+            width: 200px;
+            text-align: center;
+        }
+        h1, h2 {
+            margin: 0;
+        }
+        img {
+            display: block;
+            margin: 0 auto;
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Presupuesto Mensual</h1>
+        <p>Febrero 2025</p>
+    </header>
+
+    <div class="cards">
+        <div class="card">
+            <h2>Ingresos</h2>
+            <p>$2,000</p>
+        </div>
+        <div class="card">
+            <h2>Ahorro</h2>
+            <p>$200 (10%)</p>
+        </div>
+        <div class="card">
+            <h2>Gastos</h2>
+            <p>$1,280</p>
+        </div>
+        <div class="card">
+            <h2>Balance</h2>
+            <p>$520</p>
+        </div>
+    </div>
+
+    <h2 style="text-align:center;">Distribución de gastos</h2>
+    <img src="grafico_gastos.png" alt="Gráfico de gastos">
+</body>
+</html>
