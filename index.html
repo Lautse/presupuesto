@@ -4,39 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presupuesto Mensual</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: 'Poppins', sans-serif; background: #f6f4f2; color: #333; margin: 0; }
         header { background: #eac4d5; padding: 20px; text-align: center; }
         h1 { margin: 0; }
-        .container { max-width: 800px; margin: 30px auto; padding: 20px; background: white; border-radius: 12px;
-                     box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { display: flex; max-width: 1200px; margin: 30px auto; padding: 20px; gap: 30px; }
+        .left, .right { flex: 1; }
         .form-group { margin: 20px 0; }
         .result { margin-top: 30px; padding: 20px; background: #f7d9a6; border-radius: 12px; }
         button { background: #a3c9a8; border: none; padding: 10px 20px; font-size: 16px; border-radius: 8px; cursor: pointer; }
         button:hover { background: #92b896; }
-        input { padding: 10px; font-size: 16px; width: 100%; }
+        input[type="number"] { padding: 10px; font-size: 16px; width: 100%; margin-top: 5px; }
         label { font-weight: bold; }
     </style>
 </head>
 <body>
     <header>
         <h1>Presupuesto Mensual</h1>
-        <p>Simulador con transporte diario a Bogotá</p>
+        <p>Simulador de gastos seleccionables y ahorro flexible</p>
     </header>
+
     <div class="container">
-        <div class="form-group">
-            <label for="ingreso">¿Cuál fue tu ingreso este mes?</label>
-            <input type="number" id="ingreso" placeholder="Ejemplo: 1500000">
+        <!-- Columna izquierda -->
+        <div class="left">
+            <div class="form-group">
+                <label for="ingreso">¿Cuál fue tu ingreso este mes?</label>
+                <input type="number" id="ingreso" placeholder="Ejemplo: 1500000">
+            </div>
+
+            <div class="form-group">
+                <label>¿Qué gastos vas a pagar este mes?</label><br>
+                <input type="checkbox" id="belleza" checked> Belleza ($150.000)<br>
+                <input type="checkbox" id="fitness" checked> Fitness ($150.000)<br>
+                <input type="checkbox" id="internet" checked> Internet ($40.000)<br>
+                <input type="checkbox" id="libros" checked> Caja de libros ($140.000)<br><br>
+                
+                <!-- Gasto adicional -->
+                <input type="checkbox" id="otroCheck"> Otro gasto:
+                <input type="number" id="otroValor" placeholder="Ejemplo: 50000" disabled>
+            </div>
+
+            <div class="form-group">
+                <label for="diasBogota">¿Cuántos días viajas este mes a Bogotá?</label>
+                <input type="number" id="diasBogota" placeholder="Ejemplo: 10">
+            </div>
+
+            <button onclick="calcular()">Calcular</button>
+            <div class="result" id="resultado" style="display:none;"></div>
         </div>
-        <div class="form-group">
-            <label for="diasBogota">¿Cuántos días viajas este mes a Bogotá?</label>
-            <input type="number" id="diasBogota" placeholder="Ejemplo: 10">
+
+        <!-- Columna derecha -->
+        <div class="right">
+            <canvas id="grafico" width="400" height="400"></canvas>
         </div>
-        <button onclick="calcular()">Calcular</button>
-        <div class="result" id="resultado" style="display:none;"></div>
     </div>
 
     <script>
+        let chart;
+
+        // Habilitar/deshabilitar campo de "otro"
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById('otroCheck').addEventListener('change', function() {
+                document.getElementById('otroValor').disabled = !this.checked;
+            });
+        });
+
         function calcular() {
             let ingreso = parseFloat(document.getElementById('ingreso').value);
             let diasBogota = parseInt(document.getElementById('diasBogota').value);
@@ -50,16 +83,19 @@
                 return;
             }
 
-            // Gasto por viajes a Bogotá
-            let gastoBogota = diasBogota * 40000; // 27k transporte + 13k comida
+            // Sumar solo gastos seleccionados
+            let gastoBelleza = document.getElementById('belleza').checked ? 150000 : 0;
+            let gastoFitness = document.getElementById('fitness').checked ? 150000 : 0;
+            let gastoInternet = document.getElementById('internet').checked ? 40000 : 0;
+            let gastoLibros = document.getElementById('libros').checked ? 140000 : 0;
+            let gastoBogota = diasBogota * 40000; // transporte + comida por día
 
-            // Otros gastos fijos
-            let belleza = 150000;
-            let fitness = 150000;
-            let internet = 40000;
-            let entretenimiento = 140000;
+            // Gasto adicional
+            let gastoOtro = document.getElementById('otroCheck').checked 
+                            ? parseFloat(document.getElementById('otroValor').value) || 0 
+                            : 0;
 
-            let gastosFijos = belleza + fitness + internet + entretenimiento + gastoBogota;
+            let gastosTotales = gastoBelleza + gastoFitness + gastoInternet + gastoLibros + gastoBogota + gastoOtro;
 
             // Ahorro flexible
             let porcentajeAhorro = ingreso < 1300000 ? 0.08 : 0.12;
@@ -67,19 +103,51 @@
             let inversion = ingreso * (porcentajeAhorro >= 0.12 ? 0.07 : 0.05);
             let ahorro = ahorroTotal - inversion;
 
-            let balance = ingreso - gastosFijos - ahorroTotal;
+            let balance = ingreso - gastosTotales - ahorroTotal;
 
+            // Mostrar resultados
             document.getElementById('resultado').style.display = 'block';
             document.getElementById('resultado').innerHTML = `
                 <h2>Resultados</h2>
-                <p><strong>Viajes a Bogotá</strong>: $${gastoBogota.toLocaleString()}</p>
-                <p><strong>Gastos fijos (con libros)</strong>: $${(gastosFijos - gastoBogota).toLocaleString()}</p>
-                <p><strong>Total gastos</strong>: $${gastosFijos.toLocaleString()}</p>
+                <p><strong>Gastos seleccionados</strong>: $${gastosTotales.toLocaleString()}</p>
                 <p><strong>Ahorro</strong>: $${ahorro.toLocaleString()}</p>
                 <p><strong>Inversión</strong>: $${inversion.toLocaleString()}</p>
                 <p><strong>Balance final</strong>: $${balance.toLocaleString()}</p>
                 <p><em>Porcentaje de ahorro aplicado: ${(porcentajeAhorro*100).toFixed(0)}%</em></p>
             `;
+
+            // Actualizar gráfico dinámico
+            const data = [
+                gastosTotales,
+                inversion,
+                ahorro,
+                balance > 0 ? balance : 0
+            ];
+            const labels = ["Gastos", "Inversión", "Ahorro", "Balance"];
+            const colors = ["#eac4d5", "#a3c9a8", "#f7d9a6", "#c1b8e0"];
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            const ctx = document.getElementById('grafico').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        title: { display: true, text: 'Distribución de tu dinero' }
+                    }
+                }
+            });
         }
     </script>
 </body>
